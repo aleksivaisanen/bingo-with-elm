@@ -1,0 +1,73 @@
+var _aleksivaisanen$bingo_with_elm$Bingo$model = {
+	list: A2(_elm_lang$core$List$range, 1, 75)
+};
+var _aleksivaisanen$bingo_with_elm$Bingo$Model = function (a) {
+	return {list: a};
+};
+var _aleksivaisanen$bingo_with_elm$Bingo$ShuffledList = function (a) {
+	return {ctor: 'ShuffledList', _0: a};
+};
+var _aleksivaisanen$bingo_with_elm$Bingo$update = F2(
+	function (msg, model) {
+		var _p0 = msg;
+		if (_p0.ctor === 'ShuffleIt') {
+			return {
+				ctor: '_Tuple2',
+				_0: model,
+				_1: A2(
+					_elm_lang$core$Random$generate,
+					_aleksivaisanen$bingo_with_elm$Bingo$ShuffledList,
+					_elm_community$random_extra$Random_List$shuffle(model.list))
+			};
+		} else {
+			return A2(
+				_elm_lang$core$Platform_Cmd_ops['!'],
+				_elm_lang$core$Native_Utils.update(
+					model,
+					{list: _p0._0}),
+				{ctor: '[]'});
+		}
+	});
+var _aleksivaisanen$bingo_with_elm$Bingo$ShuffleIt = {ctor: 'ShuffleIt'};
+var _aleksivaisanen$bingo_with_elm$Bingo$view = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$button,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Events$onClick(_aleksivaisanen$bingo_with_elm$Bingo$ShuffleIt),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text('New game'),
+					_1: {ctor: '[]'}
+				}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(
+							_elm_lang$core$Basics$toString(model.list)),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			}
+		});
+};
+var _aleksivaisanen$bingo_with_elm$Bingo$main = _elm_lang$html$Html$program(
+	{
+		view: _aleksivaisanen$bingo_with_elm$Bingo$view,
+		update: _aleksivaisanen$bingo_with_elm$Bingo$update,
+		subscriptions: function (_p1) {
+			return _elm_lang$core$Platform_Sub$none;
+		},
+		init: {ctor: '_Tuple2', _0: _aleksivaisanen$bingo_with_elm$Bingo$model, _1: _elm_lang$core$Platform_Cmd$none}
+	})();
