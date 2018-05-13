@@ -1,47 +1,77 @@
 var _aleksivaisanen$bingo_with_elm$Main$update = F2(
 	function (msg, model) {
-		var _p0 = msg;
-		return model;
+		return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 	});
-var _aleksivaisanen$bingo_with_elm$Main$initialModel = {
-	numberList: A2(_elm_lang$core$List$range, 1, 75)
+var _aleksivaisanen$bingo_with_elm$Main$createModel = {
+	ctor: '_Tuple2',
+	_0: {},
+	_1: _elm_lang$core$Platform_Cmd$none
 };
-var _aleksivaisanen$bingo_with_elm$Main$Model = function (a) {
-	return {numberList: a};
-};
-var _aleksivaisanen$bingo_with_elm$Main$NewGame = {ctor: 'NewGame'};
-var _aleksivaisanen$bingo_with_elm$Main$view = function (model) {
-	return A2(
-		_elm_lang$html$Html$div,
-		{ctor: '[]'},
-		{
-			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html$button,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Events$onClick(_aleksivaisanen$bingo_with_elm$Main$NewGame),
-					_1: {ctor: '[]'}
-				},
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html$text('New game'),
-					_1: {ctor: '[]'}
-				}),
-			_1: {
+var _aleksivaisanen$bingo_with_elm$Main$createSquare = A2(
+	_elm_lang$html$Html$div,
+	{
+		ctor: '::',
+		_0: _elm_lang$html$Html_Attributes$class('container'),
+		_1: {ctor: '[]'}
+	},
+	{
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$div,
+			{
 				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$div,
-					{ctor: '[]'},
+				_0: _elm_lang$html$Html_Attributes$classList(
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html$text(
-							_elm_lang$core$Basics$toString(model.numberList)),
+						_0: {ctor: '_Tuple2', _0: 'pressed', _1: false},
 						_1: {ctor: '[]'}
 					}),
 				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('square'),
+						_1: {ctor: '[]'}
+					},
+					{ctor: '[]'}),
+				_1: {ctor: '[]'}
+			}),
+		_1: {ctor: '[]'}
+	});
+var _aleksivaisanen$bingo_with_elm$Main$view = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('wrapper'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: _aleksivaisanen$bingo_with_elm$Main$createSquare,
+			_1: {
+				ctor: '::',
+				_0: _aleksivaisanen$bingo_with_elm$Main$createSquare,
+				_1: {
+					ctor: '::',
+					_0: _aleksivaisanen$bingo_with_elm$Main$createSquare,
+					_1: {ctor: '[]'}
+				}
 			}
 		});
 };
-var _aleksivaisanen$bingo_with_elm$Main$main = _elm_lang$html$Html$beginnerProgram(
-	{model: _aleksivaisanen$bingo_with_elm$Main$initialModel, view: _aleksivaisanen$bingo_with_elm$Main$view, update: _aleksivaisanen$bingo_with_elm$Main$update})();
+var _aleksivaisanen$bingo_with_elm$Main$main = _elm_lang$html$Html$program(
+	{
+		init: _aleksivaisanen$bingo_with_elm$Main$createModel,
+		view: _aleksivaisanen$bingo_with_elm$Main$view,
+		update: _aleksivaisanen$bingo_with_elm$Main$update,
+		subscriptions: function (_p0) {
+			return _elm_lang$core$Platform_Sub$none;
+		}
+	})();
+var _aleksivaisanen$bingo_with_elm$Main$Model = {};
+var _aleksivaisanen$bingo_with_elm$Main$NoOp = {ctor: 'NoOp'};
