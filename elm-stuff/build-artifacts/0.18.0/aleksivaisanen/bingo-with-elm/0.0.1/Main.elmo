@@ -1,3 +1,26 @@
+var _aleksivaisanen$bingo_with_elm$Main$showPlayedNumbers = function (list) {
+	return A2(
+		_elm_lang$html$Html$ul,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('played-numbers'),
+			_1: {ctor: '[]'}
+		},
+		A2(
+			_elm_lang$core$List$map,
+			function (l) {
+				return A2(
+					_elm_lang$html$Html$li,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(
+							_elm_lang$core$Basics$toString(l)),
+						_1: {ctor: '[]'}
+					});
+			},
+			list));
+};
 var _aleksivaisanen$bingo_with_elm$Main$split = F2(
 	function (n, list) {
 		var _p0 = A2(_elm_lang$core$List$take, n, list);
@@ -86,24 +109,51 @@ var _aleksivaisanen$bingo_with_elm$Main$gameboard = {
 			return _aleksivaisanen$bingo_with_elm$Main$initSquare(0);
 		}),
 	gameNumbers: A2(_elm_lang$core$List$range, 1, 75),
-	gameboardNumbers: A2(_elm_lang$core$List$range, 1, 75)
+	gameboardNumbers: A2(_elm_lang$core$List$range, 1, 75),
+	playedNumbers: {ctor: '[]'}
 };
 var _aleksivaisanen$bingo_with_elm$Main$Square = F2(
 	function (a, b) {
 		return {number: a, pressed: b};
 	});
-var _aleksivaisanen$bingo_with_elm$Main$Gameboard = F3(
-	function (a, b, c) {
-		return {gameMatrix: a, gameNumbers: b, gameboardNumbers: c};
+var _aleksivaisanen$bingo_with_elm$Main$Gameboard = F4(
+	function (a, b, c, d) {
+		return {gameMatrix: a, gameNumbers: b, gameboardNumbers: c, playedNumbers: d};
 	});
 var _aleksivaisanen$bingo_with_elm$Main$Playing = function (a) {
 	return {ctor: 'Playing', _0: a};
+};
+var _aleksivaisanen$bingo_with_elm$Main$playNextNumber = function (model) {
+	var _p1 = model;
+	if (_p1.ctor === 'BeginGame') {
+		return A2(
+			_elm_lang$core$Platform_Cmd_ops['!'],
+			model,
+			{ctor: '[]'});
+	} else {
+		var _p2 = _p1._0;
+		var newGameboard = _p2;
+		return A2(
+			_elm_lang$core$Platform_Cmd_ops['!'],
+			_aleksivaisanen$bingo_with_elm$Main$Playing(
+				_elm_lang$core$Native_Utils.update(
+					newGameboard,
+					{
+						gameNumbers: A2(_elm_lang$core$List$drop, 1, _p2.gameNumbers),
+						playedNumbers: A2(
+							_elm_lang$core$List$append,
+							_p2.playedNumbers,
+							A2(_elm_lang$core$List$take, 1, _p2.gameNumbers))
+					})),
+			{ctor: '[]'});
+	}
 };
 var _aleksivaisanen$bingo_with_elm$Main$BeginGame = {ctor: 'BeginGame'};
 var _aleksivaisanen$bingo_with_elm$Main$createModel = A2(
 	_elm_lang$core$Platform_Cmd_ops['!'],
 	_aleksivaisanen$bingo_with_elm$Main$BeginGame,
 	{ctor: '[]'});
+var _aleksivaisanen$bingo_with_elm$Main$NextNumber = {ctor: 'NextNumber'};
 var _aleksivaisanen$bingo_with_elm$Main$Shuffle = function (a) {
 	return {ctor: 'Shuffle', _0: a};
 };
@@ -113,8 +163,8 @@ var _aleksivaisanen$bingo_with_elm$Main$randomList = A2(
 	A2(_aleksivaisanen$bingo_with_elm$Main$twoRandomLists, _aleksivaisanen$bingo_with_elm$Main$gameboard.gameNumbers, _aleksivaisanen$bingo_with_elm$Main$gameboard.gameboardNumbers));
 var _aleksivaisanen$bingo_with_elm$Main$update = F2(
 	function (msg, model) {
-		var _p1 = msg;
-		switch (_p1.ctor) {
+		var _p3 = msg;
+		switch (_p3.ctor) {
 			case 'NoOp':
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
@@ -122,9 +172,9 @@ var _aleksivaisanen$bingo_with_elm$Main$update = F2(
 					{ctor: '[]'});
 			case 'StartGame':
 				return {ctor: '_Tuple2', _0: model, _1: _aleksivaisanen$bingo_with_elm$Main$randomList};
-			default:
-				var _p2 = _p1._0._1;
-				var newGameboardNumbers = A2(_elm_lang$core$List$take, 25, _p2);
+			case 'Shuffle':
+				var _p4 = _p3._0._1;
+				var newGameboardNumbers = A2(_elm_lang$core$List$take, 25, _p4);
 				var listOfLists = A2(_aleksivaisanen$bingo_with_elm$Main$split, 5, newGameboardNumbers);
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
@@ -136,16 +186,18 @@ var _aleksivaisanen$bingo_with_elm$Main$update = F2(
 									_chendrix$elm_matrix$Matrix$map,
 									_aleksivaisanen$bingo_with_elm$Main$initSquare,
 									_chendrix$elm_matrix$Matrix$fromList(listOfLists)),
-								gameNumbers: _p1._0._0,
-								gameboardNumbers: A2(_elm_lang$core$List$take, 25, _p2)
+								gameNumbers: _p3._0._0,
+								gameboardNumbers: A2(_elm_lang$core$List$take, 25, _p4)
 							})),
 					{ctor: '[]'});
+			default:
+				return _aleksivaisanen$bingo_with_elm$Main$playNextNumber(model);
 		}
 	});
 var _aleksivaisanen$bingo_with_elm$Main$StartGame = {ctor: 'StartGame'};
 var _aleksivaisanen$bingo_with_elm$Main$view = function (model) {
-	var _p3 = model;
-	if (_p3.ctor === 'BeginGame') {
+	var _p5 = model;
+	if (_p5.ctor === 'BeginGame') {
 		return A2(
 			_elm_lang$html$Html$div,
 			{
@@ -224,6 +276,7 @@ var _aleksivaisanen$bingo_with_elm$Main$view = function (model) {
 				}
 			});
 	} else {
+		var _p6 = _p5._0;
 		return A2(
 			_elm_lang$html$Html$div,
 			{
@@ -257,8 +310,27 @@ var _aleksivaisanen$bingo_with_elm$Main$view = function (model) {
 								_1: {ctor: '[]'}
 							},
 							_chendrix$elm_matrix$Matrix$flatten(
-								A2(_chendrix$elm_matrix$Matrix$map, _aleksivaisanen$bingo_with_elm$Main$createSquare, _p3._0.gameMatrix))),
-						_1: {ctor: '[]'}
+								A2(_chendrix$elm_matrix$Matrix$map, _aleksivaisanen$bingo_with_elm$Main$createSquare, _p6.gameMatrix))),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$button,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Events$onClick(_aleksivaisanen$bingo_with_elm$Main$NextNumber),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text('Next number'),
+									_1: {ctor: '[]'}
+								}),
+							_1: {
+								ctor: '::',
+								_0: _aleksivaisanen$bingo_with_elm$Main$showPlayedNumbers(_p6.playedNumbers),
+								_1: {ctor: '[]'}
+							}
+						}
 					}
 				}
 			});
@@ -269,7 +341,7 @@ var _aleksivaisanen$bingo_with_elm$Main$main = _elm_lang$html$Html$program(
 		init: _aleksivaisanen$bingo_with_elm$Main$createModel,
 		view: _aleksivaisanen$bingo_with_elm$Main$view,
 		update: _aleksivaisanen$bingo_with_elm$Main$update,
-		subscriptions: function (_p4) {
+		subscriptions: function (_p7) {
 			return _elm_lang$core$Platform_Sub$none;
 		}
 	})();

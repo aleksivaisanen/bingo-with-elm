@@ -6,6 +6,7 @@
 .container{
     width:500px;
     margin: 0 auto;
+    display:block;
 }
 
 .squareButton{
@@ -20,3 +21,6 @@
     position: relative;
 }
 
+.played-numbers{
+    list-style-type:none;
+}

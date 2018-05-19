@@ -4,7 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Matrix exposing (..)
-import List exposing (take, map, head, drop)
+import List exposing (take, map, head, drop, append)
 import Random exposing (generate, pair, Generator)
 import Random.List exposing (shuffle)
 
@@ -35,12 +35,8 @@ type alias Gameboard =
     { gameMatrix : Matrix Square
     , gameNumbers : List (Int)
     , gameboardNumbers : List (Int)
+    , playedNumbers : List (Int)
     }
-
-type Msg
-    = NoOp |
-    StartGame |
-    Shuffle (List (Int), List (Int))
 
 --5x5 gameboard initialization
 gameboard : Gameboard
@@ -49,6 +45,7 @@ gameboard =
         matrix 5 5 (\location -> initSquare 0)
     , gameNumbers = List.range 1 75
     , gameboardNumbers = List.range 1 75
+    , playedNumbers = []
     }
 
 --takes to lists and returns pair generator for shuffling both lists 
@@ -86,10 +83,41 @@ split n list =
     [] -> []
     listHead -> listHead :: split n (drop n list)
 
+--function for playing the next number
+
+playNextNumber : Model -> (Model, Cmd Msg)
+playNextNumber model =
+    case model of
+        BeginGame ->
+            model ! []
+
+        Playing gameboard ->
+            let
+                newGameboard = gameboard
+            
+            in
+                Playing {newGameboard |
+                        gameNumbers = drop 1 gameboard.gameNumbers,   
+                        playedNumbers = 
+                            take 1 gameboard.gameNumbers
+                            |> append gameboard.playedNumbers
+                    } ! []
+
+--shows played numbers
+
+showPlayedNumbers : List (Int) -> Html Msg
+showPlayedNumbers list = 
+    ul[class "played-numbers"] (List.map (\l -> li[][text (toString l)]) list)
+
 createModel : ( Model, Cmd Msg )
 createModel =
     BeginGame ! []
 
+type Msg
+    = NoOp |
+    StartGame |
+    Shuffle (List (Int), List (Int)) |
+    NextNumber
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -111,7 +139,8 @@ update msg model =
                     gameNumbers = shuffledListOne, 
                     gameboardNumbers = take 25 shuffledListTwo } ! []
 
-
+        NextNumber ->
+                playNextNumber model
 
 view : Model -> Html Msg
 view model =
@@ -131,6 +160,8 @@ view model =
             div[class "site-wrapper"][
                 h1[][text "Your gameboard"],
                 br[][],
-                div [class "container"] (flatten (Matrix.map createSquare gameboard.gameMatrix))
+                div [class "container"] (flatten (Matrix.map createSquare gameboard.gameMatrix)),
+                button [onClick NextNumber][text "Next number"],
+                showPlayedNumbers gameboard.playedNumbers
 
             ]
