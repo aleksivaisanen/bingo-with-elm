@@ -4,7 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Matrix exposing (..)
-import List exposing (take, map, head, drop, append)
+import List exposing (..)
 import Random exposing (generate, pair, Generator)
 import Random.List exposing (shuffle)
 
@@ -18,6 +18,7 @@ main =
         , update = update
         , subscriptions = \_ -> Sub.none
         }
+
 
 
 type Model =
@@ -69,11 +70,11 @@ initSquare int =
 createSquare : Square -> Html Msg
 createSquare square =
     div [ class "squareContainer" ]
-        [ div [ classList [ ( "pressed", False ) ] ]
-            [ div [ class "square" ] [
-                button [ class "squareButton" ] [text (toString square.number)]
-            ]
-            ]
+        [ 
+            div [ class "square" ]
+            [
+            button [classList [("squareButton", True),("pressed", square.pressed)], onClick (GameboardClick square) ] [text (toString square.number)]
+            ]    
         ]
 --split list into list of lists
 
@@ -109,6 +110,33 @@ showPlayedNumbers : List (Int) -> Html Msg
 showPlayedNumbers list = 
     ul[class "played-numbers"] (List.map (\l -> li[][text (toString l)]) list)
 
+--checks if player has 5 in a row
+
+checkWin : Square -> Model -> (Model, Cmd Msg)
+checkWin sqr model =
+    case model of
+        BeginGame ->
+            model ! []
+            
+        Playing gameboard ->
+            let 
+                newGameboard = gameboard
+                newMatrix =
+                    Matrix.map (pressSquare True gameboard sqr) gameboard.gameMatrix
+            in
+                Playing {newGameboard |
+                        gameMatrix = newMatrix
+                } ! []
+    
+-- changes Squares pressed value from False to True when used with map 
+pressSquare : Bool -> Gameboard -> Square -> Square -> Square
+pressSquare isPressed gmbrd a b =
+    if ((a.number == b.number) && (List.any (\x -> (x == a.number)) gmbrd.playedNumbers)) then
+        {b | pressed = isPressed}
+    else
+        b
+
+
 createModel : ( Model, Cmd Msg )
 createModel =
     BeginGame ! []
@@ -117,7 +145,8 @@ type Msg
     = NoOp |
     StartGame |
     Shuffle (List (Int), List (Int)) |
-    NextNumber
+    NextNumber |
+    GameboardClick Square
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -140,7 +169,13 @@ update msg model =
                     gameboardNumbers = take 25 shuffledListTwo } ! []
 
         NextNumber ->
-                playNextNumber model
+            playNextNumber model
+
+        GameboardClick sqr->
+            if (not sqr.pressed) then
+                checkWin sqr model
+            else
+                model ! []
 
 view : Model -> Html Msg
 view model =

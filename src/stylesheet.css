@@ -12,7 +12,16 @@
 .squareButton{
     width: 100px;
     height:100px;
-    background:none;
+    background-color: white;
+    border: 1px solid black;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    
+}
+.pressed{
+    background: color #00ff00;
 }
 .squareContainer{
     float: left;
