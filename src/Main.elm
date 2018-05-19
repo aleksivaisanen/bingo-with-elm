@@ -132,4 +132,5 @@ view model =
                 h1[][text "Your gameboard"],
                 br[][],
                 div [class "container"] (flatten (Matrix.map createSquare gameboard.gameMatrix))
+
             ]
