@@ -1,0 +1,263 @@
+var _eeue56$elm_flat_matrix$Matrix$filter = F2(
+	function (f, matrix) {
+		return A2(_Skinney$elm_array_exploration$Array_Hamt$filter, f, matrix.data);
+	});
+var _eeue56$elm_flat_matrix$Matrix$map2 = F3(
+	function (f, a, b) {
+		return _elm_lang$core$Native_Utils.eq(a.size, b.size) ? _elm_lang$core$Maybe$Just(
+			_elm_lang$core$Native_Utils.update(
+				a,
+				{
+					data: _Skinney$elm_array_exploration$Array_Hamt$fromList(
+						A3(
+							_elm_lang$core$List$map2,
+							f,
+							_Skinney$elm_array_exploration$Array_Hamt$toList(a.data),
+							_Skinney$elm_array_exploration$Array_Hamt$toList(b.data)))
+				})) : _elm_lang$core$Maybe$Nothing;
+	});
+var _eeue56$elm_flat_matrix$Matrix$map = F2(
+	function (f, matrix) {
+		return _elm_lang$core$Native_Utils.update(
+			matrix,
+			{
+				data: A2(_Skinney$elm_array_exploration$Array_Hamt$map, f, matrix.data)
+			});
+	});
+var _eeue56$elm_flat_matrix$Matrix$concatVertical = F2(
+	function (a, b) {
+		return (!_elm_lang$core$Native_Utils.eq(
+			_elm_lang$core$Tuple$first(a.size),
+			_elm_lang$core$Tuple$first(b.size))) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
+			_elm_lang$core$Native_Utils.update(
+				a,
+				{
+					size: {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Tuple$first(a.size),
+						_1: _elm_lang$core$Tuple$second(a.size) + _elm_lang$core$Tuple$second(b.size)
+					},
+					data: A2(_Skinney$elm_array_exploration$Array_Hamt$append, a.data, b.data)
+				}));
+	});
+var _eeue56$elm_flat_matrix$Matrix$getColumn = F2(
+	function (i, matrix) {
+		var height = _elm_lang$core$Tuple$second(matrix.size);
+		var width = _elm_lang$core$Tuple$first(matrix.size);
+		var indices = A2(
+			_elm_lang$core$List$map,
+			function (x) {
+				return (x * width) + i;
+			},
+			A2(_elm_lang$core$List$range, 0, height - 1));
+		return (_elm_lang$core$Native_Utils.cmp(i, width) > -1) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
+			_Skinney$elm_array_exploration$Array_Hamt$fromList(
+				A3(
+					_elm_lang$core$List$foldl,
+					F2(
+						function (index, ls) {
+							var _p0 = A2(_Skinney$elm_array_exploration$Array_Hamt$get, index, matrix.data);
+							if (_p0.ctor === 'Just') {
+								return A2(
+									_elm_lang$core$Basics_ops['++'],
+									ls,
+									{
+										ctor: '::',
+										_0: _p0._0,
+										_1: {ctor: '[]'}
+									});
+							} else {
+								return ls;
+							}
+						}),
+					{ctor: '[]'},
+					indices)));
+	});
+var _eeue56$elm_flat_matrix$Matrix$fromList = function (list) {
+	var width = _elm_lang$core$List$length(
+		function () {
+			var _p1 = _elm_lang$core$List$head(list);
+			if (_p1.ctor === 'Just') {
+				return _p1._0;
+			} else {
+				return {ctor: '[]'};
+			}
+		}());
+	var allSame = _elm_lang$core$List$isEmpty(
+		A2(
+			_elm_lang$core$List$filter,
+			function (x) {
+				return !_elm_lang$core$Native_Utils.eq(
+					_elm_lang$core$List$length(x),
+					width);
+			},
+			list));
+	var height = _elm_lang$core$List$length(list);
+	return (!allSame) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
+		{
+			size: {ctor: '_Tuple2', _0: width, _1: height},
+			data: _Skinney$elm_array_exploration$Array_Hamt$fromList(
+				_elm_lang$core$List$concat(list))
+		});
+};
+var _eeue56$elm_flat_matrix$Matrix$repeat = F3(
+	function (x, y, v) {
+		return {
+			size: {ctor: '_Tuple2', _0: x, _1: y},
+			data: A2(_Skinney$elm_array_exploration$Array_Hamt$repeat, x * y, v)
+		};
+	});
+var _eeue56$elm_flat_matrix$Matrix$height = function (matrix) {
+	return _elm_lang$core$Tuple$second(matrix.size);
+};
+var _eeue56$elm_flat_matrix$Matrix$width = function (matrix) {
+	return _elm_lang$core$Tuple$first(matrix.size);
+};
+var _eeue56$elm_flat_matrix$Matrix$get = F3(
+	function (i, j, matrix) {
+		var pos = (j * _eeue56$elm_flat_matrix$Matrix$width(matrix)) + i;
+		return (((_elm_lang$core$Native_Utils.cmp(
+			i,
+			_eeue56$elm_flat_matrix$Matrix$width(matrix)) < 0) && (_elm_lang$core$Native_Utils.cmp(i, -1) > 0)) && ((_elm_lang$core$Native_Utils.cmp(
+			j,
+			_eeue56$elm_flat_matrix$Matrix$height(matrix)) < 0) && (_elm_lang$core$Native_Utils.cmp(j, -1) > 0))) ? A2(_Skinney$elm_array_exploration$Array_Hamt$get, pos, matrix.data) : _elm_lang$core$Maybe$Nothing;
+	});
+var _eeue56$elm_flat_matrix$Matrix$getRow = F2(
+	function (j, matrix) {
+		var start = j * _eeue56$elm_flat_matrix$Matrix$width(matrix);
+		var end = start + _eeue56$elm_flat_matrix$Matrix$width(matrix);
+		return (_elm_lang$core$Native_Utils.cmp(
+			end,
+			_eeue56$elm_flat_matrix$Matrix$width(matrix) * _eeue56$elm_flat_matrix$Matrix$height(matrix)) > 0) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
+			A3(_Skinney$elm_array_exploration$Array_Hamt$slice, start, end, matrix.data));
+	});
+var _eeue56$elm_flat_matrix$Matrix$concatHorizontal = F2(
+	function (a, b) {
+		var insert = F3(
+			function (i, xs, array) {
+				return A2(
+					_Skinney$elm_array_exploration$Array_Hamt$append,
+					A2(
+						_Skinney$elm_array_exploration$Array_Hamt$append,
+						A3(_Skinney$elm_array_exploration$Array_Hamt$slice, 0, i, array),
+						xs),
+					A3(
+						_Skinney$elm_array_exploration$Array_Hamt$slice,
+						i,
+						_Skinney$elm_array_exploration$Array_Hamt$length(array),
+						array));
+			});
+		var finalWidth = _elm_lang$core$Tuple$first(a.size) + _elm_lang$core$Tuple$first(b.size);
+		return (!_elm_lang$core$Native_Utils.eq(
+			_elm_lang$core$Tuple$second(a.size),
+			_elm_lang$core$Tuple$second(b.size))) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(
+			_elm_lang$core$Native_Utils.update(
+				a,
+				{
+					size: {
+						ctor: '_Tuple2',
+						_0: finalWidth,
+						_1: _elm_lang$core$Tuple$second(a.size)
+					},
+					data: A3(
+						_elm_lang$core$List$foldl,
+						F2(
+							function (_p2, acc) {
+								var _p3 = _p2;
+								return A3(insert, _p3._0 * finalWidth, _p3._1, acc);
+							}),
+						b.data,
+						A3(
+							_elm_lang$core$List$foldl,
+							F2(
+								function (i, ls) {
+									var _p4 = A2(_eeue56$elm_flat_matrix$Matrix$getRow, i, a);
+									if (_p4.ctor === 'Just') {
+										return A2(
+											_elm_lang$core$Basics_ops['++'],
+											ls,
+											{
+												ctor: '::',
+												_0: {ctor: '_Tuple2', _0: i, _1: _p4._0},
+												_1: {ctor: '[]'}
+											});
+									} else {
+										return ls;
+									}
+								}),
+							{ctor: '[]'},
+							A2(
+								_elm_lang$core$List$range,
+								0,
+								_elm_lang$core$Tuple$second(a.size) - 1)))
+				}));
+	});
+var _eeue56$elm_flat_matrix$Matrix$set = F4(
+	function (i, j, v, matrix) {
+		var pos = (j * _elm_lang$core$Tuple$first(matrix.size)) + i;
+		return (((_elm_lang$core$Native_Utils.cmp(
+			i,
+			_eeue56$elm_flat_matrix$Matrix$width(matrix)) < 0) && (_elm_lang$core$Native_Utils.cmp(i, -1) > 0)) && ((_elm_lang$core$Native_Utils.cmp(
+			j,
+			_eeue56$elm_flat_matrix$Matrix$height(matrix)) < 0) && (_elm_lang$core$Native_Utils.cmp(j, -1) > 0))) ? _elm_lang$core$Native_Utils.update(
+			matrix,
+			{
+				data: A3(_Skinney$elm_array_exploration$Array_Hamt$set, pos, v, matrix.data)
+			}) : matrix;
+	});
+var _eeue56$elm_flat_matrix$Matrix$update = F4(
+	function (x, y, f, matrix) {
+		var _p5 = A3(_eeue56$elm_flat_matrix$Matrix$get, x, y, matrix);
+		if (_p5.ctor === 'Nothing') {
+			return matrix;
+		} else {
+			return A4(
+				_eeue56$elm_flat_matrix$Matrix$set,
+				x,
+				y,
+				f(_p5._0),
+				matrix);
+		}
+	});
+var _eeue56$elm_flat_matrix$Matrix$indexedMap = F2(
+	function (f, matrix) {
+		var f_ = F2(
+			function (i, v) {
+				var y = (i / _eeue56$elm_flat_matrix$Matrix$width(matrix)) | 0;
+				var x = A2(
+					_elm_lang$core$Basics_ops['%'],
+					i,
+					_eeue56$elm_flat_matrix$Matrix$width(matrix));
+				return A3(f, x, y, v);
+			});
+		return _elm_lang$core$Native_Utils.update(
+			matrix,
+			{
+				data: _Skinney$elm_array_exploration$Array_Hamt$fromList(
+					A2(
+						_elm_lang$core$List$indexedMap,
+						f_,
+						_Skinney$elm_array_exploration$Array_Hamt$toList(matrix.data)))
+			});
+	});
+var _eeue56$elm_flat_matrix$Matrix$toIndexedArray = function (matrix) {
+	return A2(
+		_eeue56$elm_flat_matrix$Matrix$indexedMap,
+		F3(
+			function (x, y, v) {
+				return {
+					ctor: '_Tuple2',
+					_0: {ctor: '_Tuple2', _0: x, _1: y},
+					_1: v
+				};
+			}),
+		matrix).data;
+};
+var _eeue56$elm_flat_matrix$Matrix$empty = {
+	size: {ctor: '_Tuple2', _0: 0, _1: 0},
+	data: _Skinney$elm_array_exploration$Array_Hamt$empty
+};
+var _eeue56$elm_flat_matrix$Matrix$Matrix = F2(
+	function (a, b) {
+		return {size: a, data: b};
+	});
