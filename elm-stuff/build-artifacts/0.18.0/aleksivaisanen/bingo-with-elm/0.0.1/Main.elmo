@@ -25,14 +25,14 @@ var _aleksivaisanen$bingo_with_elm$Main$showPlayedNumbers = function (list) {
 			},
 			list));
 };
-var _aleksivaisanen$bingo_with_elm$Main$pressSquare = F4(
-	function (isPressed, gmbrd, a, b) {
+var _aleksivaisanen$bingo_with_elm$Main$pressSquare = F5(
+	function (isPressed, gmbrd, gameNums, a, b) {
 		return (_elm_lang$core$Native_Utils.eq(a.number, b.number) && A2(
 			_elm_lang$core$List$any,
 			function (x) {
 				return _elm_lang$core$Native_Utils.eq(x, a.number);
 			},
-			gmbrd.playedNumbers)) ? _elm_lang$core$Native_Utils.update(
+			gameNums.playedNums)) ? _elm_lang$core$Native_Utils.update(
 			b,
 			{pressed: isPressed}) : b;
 	});
@@ -61,45 +61,48 @@ var _aleksivaisanen$bingo_with_elm$Main$transpose = function (listOfLists) {
 		}
 	}
 };
-var _aleksivaisanen$bingo_with_elm$Main$checkRows = function (gmbrd) {
-	checkRows:
-	while (true) {
-		var listOfLists = _chendrix$elm_matrix$Matrix$toList(gmbrd.gameMatrix);
-		var firstList = _elm_lang$core$List$concat(
-			A2(_elm_lang$core$List$take, 1, listOfLists));
-		if (_elm_lang$core$Native_Utils.eq(
-			firstList,
-			{ctor: '[]'})) {
-			return false;
-		} else {
+var _aleksivaisanen$bingo_with_elm$Main$checkRows = F2(
+	function (gmbrd, gameNums) {
+		checkRows:
+		while (true) {
+			var listOfLists = _chendrix$elm_matrix$Matrix$toList(gmbrd.gameMatrix);
+			var firstList = _elm_lang$core$List$concat(
+				A2(_elm_lang$core$List$take, 1, listOfLists));
 			if (_elm_lang$core$Native_Utils.eq(
-				_elm_lang$core$List$length(
-					A2(
-						_elm_lang$core$List$filter,
-						function (x) {
-							return A2(
-								_elm_lang$core$List$any,
-								function (y) {
-									return _elm_lang$core$Native_Utils.eq(y, x.number);
-								},
-								gmbrd.playedNumbers) && x.pressed;
-						},
-						firstList)),
-				5)) {
-				return true;
+				firstList,
+				{ctor: '[]'})) {
+				return false;
 			} else {
-				var _v2 = _elm_lang$core$Native_Utils.update(
-					gmbrd,
-					{
-						gameMatrix: _chendrix$elm_matrix$Matrix$fromList(
-							A2(_elm_lang$core$List$drop, 1, listOfLists))
-					});
-				gmbrd = _v2;
-				continue checkRows;
+				if (_elm_lang$core$Native_Utils.eq(
+					_elm_lang$core$List$length(
+						A2(
+							_elm_lang$core$List$filter,
+							function (x) {
+								return A2(
+									_elm_lang$core$List$any,
+									function (y) {
+										return _elm_lang$core$Native_Utils.eq(y, x.number);
+									},
+									{ctor: '::', _0: 0, _1: gameNums.playedNums}) && x.pressed;
+							},
+							firstList)),
+					5)) {
+					return true;
+				} else {
+					var _v2 = _elm_lang$core$Native_Utils.update(
+						gmbrd,
+						{
+							gameMatrix: _chendrix$elm_matrix$Matrix$fromList(
+								A2(_elm_lang$core$List$drop, 1, listOfLists))
+						}),
+						_v3 = gameNums;
+					gmbrd = _v2;
+					gameNums = _v3;
+					continue checkRows;
+				}
 			}
 		}
-	}
-};
+	});
 var _aleksivaisanen$bingo_with_elm$Main$split = F2(
 	function (n, list) {
 		var _p2 = A2(_elm_lang$core$List$take, n, list);
@@ -117,7 +120,7 @@ var _aleksivaisanen$bingo_with_elm$Main$split = F2(
 		}
 	});
 var _aleksivaisanen$bingo_with_elm$Main$initSquare = function ($int) {
-	return {number: $int, pressed: false};
+	return _elm_lang$core$Native_Utils.eq($int, 0) ? {number: $int, pressed: true} : {number: $int, pressed: false};
 };
 var _aleksivaisanen$bingo_with_elm$Main$locToSquare = F2(
 	function (matrix, loc) {
@@ -127,13 +130,6 @@ var _aleksivaisanen$bingo_with_elm$Main$locToSquare = F2(
 		} else {
 			return _aleksivaisanen$bingo_with_elm$Main$initSquare(-1);
 		}
-	});
-var _aleksivaisanen$bingo_with_elm$Main$twoRandomLists = F2(
-	function (list, listTwo) {
-		return A2(
-			_elm_lang$core$Random$pair,
-			_elm_community$random_extra$Random_List$shuffle(list),
-			_elm_community$random_extra$Random_List$shuffle(listTwo));
 	});
 var _aleksivaisanen$bingo_with_elm$Main$gameboardDiagonals = {
 	ctor: '::',
@@ -176,48 +172,53 @@ var _aleksivaisanen$bingo_with_elm$Main$gameboardDiagonals = {
 		}
 	}
 };
-var _aleksivaisanen$bingo_with_elm$Main$checkDiagonals = function (gmbrd) {
-	var matrix = gmbrd.gameMatrix;
-	var sqrListOne = A2(
-		_elm_lang$core$List$map,
-		_aleksivaisanen$bingo_with_elm$Main$locToSquare(matrix),
-		A2(_elm_lang$core$List$take, 5, _aleksivaisanen$bingo_with_elm$Main$gameboardDiagonals));
-	var sqrListTwo = A2(
-		_elm_lang$core$List$map,
-		_aleksivaisanen$bingo_with_elm$Main$locToSquare(matrix),
-		A2(_elm_lang$core$List$drop, 5, _aleksivaisanen$bingo_with_elm$Main$gameboardDiagonals));
-	var playedNums = gmbrd.playedNumbers;
-	return (_elm_lang$core$Native_Utils.eq(
-		sqrListOne,
-		{ctor: '[]'}) || _elm_lang$core$Native_Utils.eq(
-		sqrListTwo,
-		{ctor: '[]'})) ? false : (_elm_lang$core$Native_Utils.eq(
-		_elm_lang$core$List$length(
-			A2(
-				_elm_lang$core$List$filter,
-				function (x) {
-					return A2(
-						_elm_lang$core$List$any,
-						function (y) {
-							return _elm_lang$core$Native_Utils.eq(y, x.number);
-						},
-						playedNums) && x.pressed;
-				},
-				sqrListOne)),
-		5) ? true : (_elm_lang$core$Native_Utils.eq(
-		_elm_lang$core$List$length(
-			A2(
-				_elm_lang$core$List$filter,
-				function (x) {
-					return A2(
-						_elm_lang$core$List$any,
-						function (y) {
-							return _elm_lang$core$Native_Utils.eq(y, x.number);
-						},
-						playedNums) && x.pressed;
-				},
-				sqrListTwo)),
-		5) ? true : false));
+var _aleksivaisanen$bingo_with_elm$Main$checkDiagonals = F2(
+	function (gmbrd, gameNums) {
+		var matrix = gmbrd.gameMatrix;
+		var sqrListOne = A2(
+			_elm_lang$core$List$map,
+			_aleksivaisanen$bingo_with_elm$Main$locToSquare(matrix),
+			A2(_elm_lang$core$List$take, 5, _aleksivaisanen$bingo_with_elm$Main$gameboardDiagonals));
+		var sqrListTwo = A2(
+			_elm_lang$core$List$map,
+			_aleksivaisanen$bingo_with_elm$Main$locToSquare(matrix),
+			A2(_elm_lang$core$List$drop, 5, _aleksivaisanen$bingo_with_elm$Main$gameboardDiagonals));
+		var playedNums = gameNums.playedNums;
+		return (_elm_lang$core$Native_Utils.eq(
+			sqrListOne,
+			{ctor: '[]'}) || _elm_lang$core$Native_Utils.eq(
+			sqrListTwo,
+			{ctor: '[]'})) ? false : (_elm_lang$core$Native_Utils.eq(
+			_elm_lang$core$List$length(
+				A2(
+					_elm_lang$core$List$filter,
+					function (x) {
+						return A2(
+							_elm_lang$core$List$any,
+							function (y) {
+								return _elm_lang$core$Native_Utils.eq(y, x.number);
+							},
+							{ctor: '::', _0: 0, _1: playedNums}) && x.pressed;
+					},
+					sqrListOne)),
+			5) ? true : (_elm_lang$core$Native_Utils.eq(
+			_elm_lang$core$List$length(
+				A2(
+					_elm_lang$core$List$filter,
+					function (x) {
+						return A2(
+							_elm_lang$core$List$any,
+							function (y) {
+								return _elm_lang$core$Native_Utils.eq(y, x.number);
+							},
+							{ctor: '::', _0: 0, _1: playedNums}) && x.pressed;
+					},
+					sqrListTwo)),
+			5) ? true : false));
+	});
+var _aleksivaisanen$bingo_with_elm$Main$gameNumbers = {
+	toBePlayed: A2(_elm_lang$core$List$range, 1, 75),
+	playedNums: {ctor: '[]'}
 };
 var _aleksivaisanen$bingo_with_elm$Main$gameboard = {
 	gameMatrix: A3(
@@ -227,69 +228,89 @@ var _aleksivaisanen$bingo_with_elm$Main$gameboard = {
 		function (location) {
 			return _aleksivaisanen$bingo_with_elm$Main$initSquare(0);
 		}),
-	gameNumbers: A2(_elm_lang$core$List$range, 1, 75),
-	gameboardNumbers: A2(_elm_lang$core$List$range, 1, 75),
-	playedNumbers: {ctor: '[]'}
+	gameboardNumbers: A2(_elm_lang$core$List$range, 1, 75)
 };
 var _aleksivaisanen$bingo_with_elm$Main$Square = F2(
 	function (a, b) {
 		return {number: a, pressed: b};
 	});
-var _aleksivaisanen$bingo_with_elm$Main$Gameboard = F4(
-	function (a, b, c, d) {
-		return {gameMatrix: a, gameNumbers: b, gameboardNumbers: c, playedNumbers: d};
-	});
-var _aleksivaisanen$bingo_with_elm$Main$GameOver = F2(
+var _aleksivaisanen$bingo_with_elm$Main$Gameboard = F2(
 	function (a, b) {
-		return {ctor: 'GameOver', _0: a, _1: b};
+		return {gameMatrix: a, gameboardNumbers: b};
 	});
-var _aleksivaisanen$bingo_with_elm$Main$Playing = function (a) {
-	return {ctor: 'Playing', _0: a};
-};
-var _aleksivaisanen$bingo_with_elm$Main$playNextNumber = function (model) {
-	var _p4 = model;
-	switch (_p4.ctor) {
-		case 'BeginGame':
-			return A2(
-				_elm_lang$core$Platform_Cmd_ops['!'],
-				model,
-				{ctor: '[]'});
-		case 'Playing':
-			var _p5 = _p4._0;
-			var newGameboard = _p5;
-			return A2(
-				_elm_lang$core$Platform_Cmd_ops['!'],
-				_aleksivaisanen$bingo_with_elm$Main$Playing(
-					_elm_lang$core$Native_Utils.update(
-						newGameboard,
-						{
-							gameNumbers: A2(_elm_lang$core$List$drop, 1, _p5.gameNumbers),
-							playedNumbers: A2(
-								_elm_lang$core$List$append,
-								_p5.playedNumbers,
-								A2(_elm_lang$core$List$take, 1, _p5.gameNumbers))
-						})),
-				{ctor: '[]'});
-		default:
-			return A2(
-				_elm_lang$core$Platform_Cmd_ops['!'],
-				model,
-				{ctor: '[]'});
-	}
-};
-var _aleksivaisanen$bingo_with_elm$Main$checkWinHelper = function (gmbrd) {
-	return (_aleksivaisanen$bingo_with_elm$Main$checkRows(gmbrd) || (_aleksivaisanen$bingo_with_elm$Main$checkRows(
-		_elm_lang$core$Native_Utils.update(
+var _aleksivaisanen$bingo_with_elm$Main$GameNumbers = F2(
+	function (a, b) {
+		return {toBePlayed: a, playedNums: b};
+	});
+var _aleksivaisanen$bingo_with_elm$Main$GameOver = F3(
+	function (a, b, c) {
+		return {ctor: 'GameOver', _0: a, _1: b, _2: c};
+	});
+var _aleksivaisanen$bingo_with_elm$Main$Playing = F2(
+	function (a, b) {
+		return {ctor: 'Playing', _0: a, _1: b};
+	});
+var _aleksivaisanen$bingo_with_elm$Main$playNextNumber = F2(
+	function (model, num) {
+		var _p4 = model;
+		switch (_p4.ctor) {
+			case 'BeginGame':
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					model,
+					{ctor: '[]'});
+			case 'Playing':
+				var _p5 = _p4._1;
+				var nextRandomNum = num;
+				var newGameNums = _p5;
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					A2(
+						_aleksivaisanen$bingo_with_elm$Main$Playing,
+						_p4._0,
+						_elm_lang$core$Native_Utils.update(
+							newGameNums,
+							{
+								toBePlayed: A2(
+									_elm_lang$core$List$filter,
+									function (x) {
+										return !_elm_lang$core$Native_Utils.eq(x, nextRandomNum);
+									},
+									_p5.toBePlayed),
+								playedNums: A2(
+									_elm_lang$core$List$append,
+									_p5.playedNums,
+									{
+										ctor: '::',
+										_0: nextRandomNum,
+										_1: {ctor: '[]'}
+									})
+							})),
+					{ctor: '[]'});
+			default:
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					model,
+					{ctor: '[]'});
+		}
+	});
+var _aleksivaisanen$bingo_with_elm$Main$checkWinHelper = F2(
+	function (gmbrd, gameNums) {
+		return (A2(_aleksivaisanen$bingo_with_elm$Main$checkRows, gmbrd, gameNums) || (A2(
+			_aleksivaisanen$bingo_with_elm$Main$checkRows,
+			_elm_lang$core$Native_Utils.update(
+				gmbrd,
+				{
+					gameMatrix: _chendrix$elm_matrix$Matrix$fromList(
+						_aleksivaisanen$bingo_with_elm$Main$transpose(
+							_chendrix$elm_matrix$Matrix$toList(gmbrd.gameMatrix)))
+				}),
+			gameNums) || A2(_aleksivaisanen$bingo_with_elm$Main$checkDiagonals, gmbrd, gameNums))) ? A3(
+			_aleksivaisanen$bingo_with_elm$Main$GameOver,
 			gmbrd,
-			{
-				gameMatrix: _chendrix$elm_matrix$Matrix$fromList(
-					_aleksivaisanen$bingo_with_elm$Main$transpose(
-						_chendrix$elm_matrix$Matrix$toList(gmbrd.gameMatrix)))
-			})) || _aleksivaisanen$bingo_with_elm$Main$checkDiagonals(gmbrd))) ? A2(
-		_aleksivaisanen$bingo_with_elm$Main$GameOver,
-		gmbrd,
-		_elm_lang$core$List$length(gmbrd.playedNumbers)) : _aleksivaisanen$bingo_with_elm$Main$Playing(gmbrd);
-};
+			gameNums,
+			_elm_lang$core$List$length(gameNums.playedNums)) : A2(_aleksivaisanen$bingo_with_elm$Main$Playing, gmbrd, gameNums);
+	});
 var _aleksivaisanen$bingo_with_elm$Main$checkWin = F2(
 	function (sqr, model) {
 		var _p6 = model;
@@ -300,18 +321,21 @@ var _aleksivaisanen$bingo_with_elm$Main$checkWin = F2(
 					model,
 					{ctor: '[]'});
 			case 'Playing':
-				var _p7 = _p6._0;
+				var _p8 = _p6._0;
+				var _p7 = _p6._1;
 				var newMatrix = A2(
 					_chendrix$elm_matrix$Matrix$map,
-					A3(_aleksivaisanen$bingo_with_elm$Main$pressSquare, true, _p7, sqr),
-					_p7.gameMatrix);
-				var newGameboard = _p7;
+					A4(_aleksivaisanen$bingo_with_elm$Main$pressSquare, true, _p8, _p7, sqr),
+					_p8.gameMatrix);
+				var newGameboard = _p8;
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
-					_aleksivaisanen$bingo_with_elm$Main$checkWinHelper(
+					A2(
+						_aleksivaisanen$bingo_with_elm$Main$checkWinHelper,
 						_elm_lang$core$Native_Utils.update(
 							newGameboard,
-							{gameMatrix: newMatrix})),
+							{gameMatrix: newMatrix}),
+						_p7),
 					{ctor: '[]'});
 			default:
 				return A2(
@@ -380,8 +404,8 @@ var _aleksivaisanen$bingo_with_elm$Main$createSquare = function (square) {
 		});
 };
 var _aleksivaisanen$bingo_with_elm$Main$NextNumber = {ctor: 'NextNumber'};
-var _aleksivaisanen$bingo_with_elm$Main$wrapper = F2(
-	function (gmbrd, overlay) {
+var _aleksivaisanen$bingo_with_elm$Main$wrapper = F3(
+	function (gmbrd, gameNumbers, overlay) {
 		return A2(
 			_elm_lang$html$Html$div,
 			{
@@ -444,7 +468,7 @@ var _aleksivaisanen$bingo_with_elm$Main$wrapper = F2(
 										}),
 									_1: {
 										ctor: '::',
-										_0: _aleksivaisanen$bingo_with_elm$Main$showPlayedNumbers(gmbrd.playedNumbers),
+										_0: _aleksivaisanen$bingo_with_elm$Main$showPlayedNumbers(gameNumbers.playedNums),
 										_1: {
 											ctor: '::',
 											_0: overlay,
@@ -458,47 +482,102 @@ var _aleksivaisanen$bingo_with_elm$Main$wrapper = F2(
 				}
 			});
 	});
+var _aleksivaisanen$bingo_with_elm$Main$RandomizeNextGameNumber = function (a) {
+	return {ctor: 'RandomizeNextGameNumber', _0: a};
+};
+var _aleksivaisanen$bingo_with_elm$Main$randomizeNextGameNumber = function (list) {
+	return A2(
+		_elm_lang$core$Random$generate,
+		_aleksivaisanen$bingo_with_elm$Main$RandomizeNextGameNumber,
+		_elm_community$random_extra$Random_Extra$sample(list));
+};
 var _aleksivaisanen$bingo_with_elm$Main$Shuffle = function (a) {
 	return {ctor: 'Shuffle', _0: a};
 };
-var _aleksivaisanen$bingo_with_elm$Main$randomList = A2(
-	_elm_lang$core$Random$generate,
-	_aleksivaisanen$bingo_with_elm$Main$Shuffle,
-	A2(_aleksivaisanen$bingo_with_elm$Main$twoRandomLists, _aleksivaisanen$bingo_with_elm$Main$gameboard.gameNumbers, _aleksivaisanen$bingo_with_elm$Main$gameboard.gameboardNumbers));
+var _aleksivaisanen$bingo_with_elm$Main$randomList = function (list) {
+	return A2(
+		_elm_lang$core$Random$generate,
+		_aleksivaisanen$bingo_with_elm$Main$Shuffle,
+		_elm_community$random_extra$Random_List$shuffle(list));
+};
+var _aleksivaisanen$bingo_with_elm$Main$manyRandomLists = function (listOfLists) {
+	return _elm_lang$core$Platform_Cmd$batch(
+		A2(_elm_lang$core$List$map, _aleksivaisanen$bingo_with_elm$Main$randomList, listOfLists));
+};
 var _aleksivaisanen$bingo_with_elm$Main$update = F2(
 	function (msg, model) {
-		var _p8 = msg;
-		switch (_p8.ctor) {
+		var _p9 = msg;
+		switch (_p9.ctor) {
 			case 'NoOp':
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					model,
 					{ctor: '[]'});
 			case 'StartGame':
-				return {ctor: '_Tuple2', _0: model, _1: _aleksivaisanen$bingo_with_elm$Main$randomList};
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: _aleksivaisanen$bingo_with_elm$Main$manyRandomLists(
+						{
+							ctor: '::',
+							_0: _aleksivaisanen$bingo_with_elm$Main$gameboard.gameboardNumbers,
+							_1: {ctor: '[]'}
+						})
+				};
 			case 'Shuffle':
-				var _p9 = _p8._0._1;
-				var newGameboardNumbers = A2(_elm_lang$core$List$take, 25, _p9);
-				var listOfLists = A2(_aleksivaisanen$bingo_with_elm$Main$split, 5, newGameboardNumbers);
+				var newGameboardNumbers = A2(_elm_lang$core$List$take, 25, _p9._0);
+				var matrixLists = A2(_aleksivaisanen$bingo_with_elm$Main$split, 5, newGameboardNumbers);
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
-					_aleksivaisanen$bingo_with_elm$Main$Playing(
+					A2(
+						_aleksivaisanen$bingo_with_elm$Main$Playing,
 						_elm_lang$core$Native_Utils.update(
 							_aleksivaisanen$bingo_with_elm$Main$gameboard,
 							{
-								gameMatrix: A2(
-									_chendrix$elm_matrix$Matrix$map,
-									_aleksivaisanen$bingo_with_elm$Main$initSquare,
-									_chendrix$elm_matrix$Matrix$fromList(listOfLists)),
-								gameNumbers: _p8._0._0,
-								gameboardNumbers: A2(_elm_lang$core$List$take, 25, _p9)
-							})),
+								gameMatrix: A3(
+									_chendrix$elm_matrix$Matrix$set,
+									A2(_chendrix$elm_matrix$Matrix$loc, 2, 2),
+									_aleksivaisanen$bingo_with_elm$Main$initSquare(0),
+									A2(
+										_chendrix$elm_matrix$Matrix$map,
+										_aleksivaisanen$bingo_with_elm$Main$initSquare,
+										_chendrix$elm_matrix$Matrix$fromList(matrixLists)))
+							}),
+						_aleksivaisanen$bingo_with_elm$Main$gameNumbers),
 					{ctor: '[]'});
+			case 'RandomizeNextGameNumber':
+				var _p10 = _p9._0;
+				if (_p10.ctor === 'Nothing') {
+					return A2(
+						_elm_lang$core$Platform_Cmd_ops['!'],
+						model,
+						{ctor: '[]'});
+				} else {
+					return A2(_aleksivaisanen$bingo_with_elm$Main$playNextNumber, model, _p10._0);
+				}
 			case 'NextNumber':
-				return _aleksivaisanen$bingo_with_elm$Main$playNextNumber(model);
+				var _p11 = model;
+				switch (_p11.ctor) {
+					case 'BeginGame':
+						return A2(
+							_elm_lang$core$Platform_Cmd_ops['!'],
+							model,
+							{ctor: '[]'});
+					case 'Playing':
+						return {
+							ctor: '_Tuple2',
+							_0: model,
+							_1: _aleksivaisanen$bingo_with_elm$Main$randomizeNextGameNumber(_p11._1.toBePlayed)
+						};
+					default:
+						return A2(
+							_elm_lang$core$Platform_Cmd_ops['!'],
+							model,
+							{ctor: '[]'});
+				}
 			default:
-				var _p10 = _p8._0;
-				return (!_p10.pressed) ? A2(_aleksivaisanen$bingo_with_elm$Main$checkWin, _p10, model) : A2(
+				var _p12 = _p9._0;
+				return (!_p12.pressed) ? A2(_aleksivaisanen$bingo_with_elm$Main$checkWin, _p12, model) : A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					model,
 					{ctor: '[]'});
@@ -604,7 +683,7 @@ var _aleksivaisanen$bingo_with_elm$Main$startScreen = A2(
 					{ctor: '[]'},
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html$text('Your objective is to get five in a row on your gameboard either vertically, horizontally or diagonally. \n                \'Next number\' button gives you the next number to check on your gameboard. \n                After you see you have the same number on your gameboard, \n                just click on the correct number on your gameboard and that square will turn green. \n                When you have 5 in a row in your gameboard, you have won the game.'),
+						_0: _elm_lang$html$Html$text('Your objective is to get five in a row on your gameboard either vertically, horizontally or diagonally. \n                \'Next number\' button gives you the next number to check on your gameboard. \n                After you see you have the same number on your gameboard, \n                just click on the correct number on your gameboard and that square will turn green.\n                The centermost square is a so-called \'free square\'.\n                It can be used to for 5 in a rows. \n                When you have 5 in a row in your gameboard, you have won the game.'),
 						_1: {ctor: '[]'}
 					}),
 				_1: {
@@ -706,20 +785,22 @@ var _aleksivaisanen$bingo_with_elm$Main$startScreen = A2(
 		}
 	});
 var _aleksivaisanen$bingo_with_elm$Main$view = function (model) {
-	var _p11 = model;
-	switch (_p11.ctor) {
+	var _p13 = model;
+	switch (_p13.ctor) {
 		case 'BeginGame':
 			return _aleksivaisanen$bingo_with_elm$Main$startScreen;
 		case 'Playing':
-			return A2(
+			return A3(
 				_aleksivaisanen$bingo_with_elm$Main$wrapper,
-				_p11._0,
+				_p13._0,
+				_p13._1,
 				_elm_lang$html$Html$text(''));
 		default:
-			return A2(
+			return A3(
 				_aleksivaisanen$bingo_with_elm$Main$wrapper,
-				_p11._0,
-				_aleksivaisanen$bingo_with_elm$Main$playAgainOverlay(_p11._1));
+				_p13._0,
+				_p13._1,
+				_aleksivaisanen$bingo_with_elm$Main$playAgainOverlay(_p13._2));
 	}
 };
 var _aleksivaisanen$bingo_with_elm$Main$main = _elm_lang$html$Html$program(
@@ -727,7 +808,7 @@ var _aleksivaisanen$bingo_with_elm$Main$main = _elm_lang$html$Html$program(
 		init: _aleksivaisanen$bingo_with_elm$Main$createModel,
 		view: _aleksivaisanen$bingo_with_elm$Main$view,
 		update: _aleksivaisanen$bingo_with_elm$Main$update,
-		subscriptions: function (_p12) {
+		subscriptions: function (_p14) {
 			return _elm_lang$core$Platform_Sub$none;
 		}
 	})();

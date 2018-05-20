@@ -7,6 +7,7 @@ import Matrix exposing (..)
 import List exposing (..)
 import Random exposing (generate, pair, Generator)
 import Random.List exposing (shuffle)
+import Random.Extra exposing (sample)
 
 
 
@@ -19,12 +20,10 @@ main =
         , subscriptions = \_ -> Sub.none
         }
 
-
-
 type Model =
     BeginGame
-    | Playing Gameboard
-    | GameOver Gameboard Int
+    | Playing Gameboard GameNumbers
+    | GameOver Gameboard GameNumbers Int
 
 --square type for the gameboard
 type alias Square = 
@@ -35,19 +34,26 @@ type alias Square =
 --gameboard, implemented using matrix
 type alias Gameboard =
     { gameMatrix : Matrix Square
-    , gameNumbers : List (Int)
     , gameboardNumbers : List (Int)
-    , playedNumbers : List (Int)
     }
 
 --5x5 gameboard initialization
 gameboard : Gameboard
 gameboard = 
-    { gameMatrix = 
-        matrix 5 5 (\location -> initSquare 0)
-    , gameNumbers = List.range 1 75
+    { gameMatrix = matrix 5 5 (\location -> initSquare 0)
     , gameboardNumbers = List.range 1 75
-    , playedNumbers = []
+    }
+
+-- gamenumbers to be played with
+type alias GameNumbers =
+    { toBePlayed : List (Int)
+    , playedNums : List (Int)
+    }
+
+gameNumbers : GameNumbers
+gameNumbers =
+    { toBePlayed = List.range 1 75
+    , playedNums = []
     }
 
 --used for checking the diagonal rows
@@ -56,21 +62,32 @@ gameboardDiagonals =
     [loc 0 0, loc 1 1, loc 2 2, loc 3 3, loc 4 4 , loc 4 0, loc 3 1, loc 2 2, loc 1 3, loc 0 4]
 
 --takes to lists and returns pair generator for shuffling both lists 
-twoRandomLists :List Int -> List Int -> Generator (List Int, List Int)
-twoRandomLists list listTwo=
-    pair (shuffle list) (shuffle listTwo)
+manyRandomLists :List (List Int) -> Cmd Msg
+manyRandomLists listOfLists =
+    Cmd.batch (List.map randomList listOfLists)
+
 
 --generates a Cmd Msg to shuffle the list
-randomList : Cmd Msg
-randomList =
-    generate Shuffle (twoRandomLists gameboard.gameNumbers gameboard.gameboardNumbers)
+randomList : List Int -> Cmd Msg
+randomList list =
+    generate Shuffle (shuffle list)
 
---initializes one square
+--generates a Cmd Msg to take the next random playable number
+randomizeNextGameNumber : List (Int) -> Cmd Msg
+randomizeNextGameNumber list =
+    generate RandomizeNextGameNumber (Random.Extra.sample list)
+
+--initializes one square with 0 as already pressed
 initSquare : Int  -> Square
 initSquare int =
-    { number = int
-    , pressed = False
-    }
+    if (int == 0) then
+        { number = int
+        , pressed = True
+        }
+    else
+        { number = int
+        , pressed = False
+        }
 
 --split list into list of lists
 
@@ -82,25 +99,24 @@ split n list =
 
 --function for playing the next number
 
-playNextNumber : Model -> (Model, Cmd Msg)
-playNextNumber model =
+playNextNumber : Model -> Int -> (Model, Cmd Msg)
+playNextNumber model num =
     case model of
         BeginGame ->
             model ! []
 
-        Playing gameboard ->
+        Playing gameboard gameNums->
             let
-                newGameboard = gameboard
-            
+                newGameNums = gameNums
+                nextRandomNum = num
             in
-                Playing {newGameboard |
-                        gameNumbers = drop 1 gameboard.gameNumbers,   
-                        playedNumbers = 
-                            take 1 gameboard.gameNumbers
-                            |> append gameboard.playedNumbers
+                Playing gameboard
+                    {newGameNums |
+                        toBePlayed = filter (\x -> not (x == nextRandomNum )) gameNums.toBePlayed  
+                        , playedNums = append gameNums.playedNums [nextRandomNum]
                     } ! []
 
-        GameOver gameboard _ ->
+        GameOver gameboard gameNums _ ->
             model ! []
 
 --checks if player has 5 in a row
@@ -111,44 +127,45 @@ checkWin sqr model =
         BeginGame ->
             model ! []
             
-        Playing gameboard ->
+        Playing gameboard gameNums->
             let 
                 newGameboard = gameboard
                 newMatrix =
-                    Matrix.map (pressSquare True gameboard sqr) gameboard.gameMatrix
+                    Matrix.map (pressSquare True gameboard gameNums sqr) gameboard.gameMatrix
             in
                 checkWinHelper {newGameboard |
                         gameMatrix = newMatrix
-                } ! []
+                } gameNums ! []
         
-        GameOver gameboard _ -> 
+        GameOver gameboard gameNums _ -> 
             model ! []
 
-checkWinHelper : Gameboard -> Model
-checkWinHelper gmbrd =
-    if (checkRows gmbrd) 
-        || (checkRows {gmbrd | gameMatrix = fromList (transpose (toList gmbrd.gameMatrix))})
-        || (checkDiagonals gmbrd) 
+checkWinHelper : Gameboard -> GameNumbers ->Model
+checkWinHelper gmbrd gameNums =
+    if (checkRows gmbrd gameNums) 
+        || (checkRows {gmbrd | gameMatrix = fromList (transpose (toList gmbrd.gameMatrix))} gameNums)
+        || (checkDiagonals gmbrd gameNums) 
         then    
-        GameOver gmbrd (length gmbrd.playedNumbers)
+        GameOver gmbrd gameNums (length gameNums.playedNums)
     
     else 
-        Playing gmbrd
+        Playing gmbrd gameNums
 
 --function for checking rows in gameboard
-checkRows : Gameboard -> Bool
-checkRows gmbrd =
+checkRows : Gameboard -> GameNumbers -> Bool
+checkRows gmbrd gameNums =
     let 
         listOfLists = toList gmbrd.gameMatrix
         firstList = concat (take 1 listOfLists)
     in
         if (firstList == []) then
             False
-        else if (length (List.filter (\x -> (List.any (\y -> y == x.number) gmbrd.playedNumbers) && x.pressed) firstList) == 5) then
+        else if (length (List.filter (\x -> (List.any (\y -> y == x.number) (0 :: gameNums.playedNums)) && x.pressed) firstList) == 5) then
             True
         else
             checkRows {gmbrd |
                 gameMatrix = fromList (drop 1 listOfLists)}
+                gameNums
 
 -- turns cols to rows so we can use the previous function again    
 transpose: List (List a) -> List (List a) 
@@ -171,10 +188,10 @@ transpose listOfLists =
             (x :: heads) :: transpose (xs :: tails)
 
 --checks diagonal rows    
-checkDiagonals : Gameboard -> Bool
-checkDiagonals gmbrd =  
+checkDiagonals : Gameboard -> GameNumbers -> Bool
+checkDiagonals gmbrd gameNums =  
     let
-        playedNums = gmbrd.playedNumbers
+        playedNums = gameNums.playedNums
         matrix = gmbrd.gameMatrix
         sqrListOne = List.map (locToSquare matrix) (take 5 gameboardDiagonals)
         sqrListTwo = List.map (locToSquare matrix) (drop 5 gameboardDiagonals)
@@ -182,9 +199,9 @@ checkDiagonals gmbrd =
     in
         if (sqrListOne == [] || sqrListTwo == []) then
             False
-        else if (length (List.filter (\x -> (List.any (\y -> y == x.number) playedNums) && x.pressed) sqrListOne) == 5) then
+        else if (length (List.filter (\x -> (List.any (\y -> y == x.number) (0 :: playedNums)) && x.pressed) sqrListOne) == 5) then
             True
-        else if (length (List.filter (\x -> (List.any (\y -> y == x.number) playedNums) && x.pressed) sqrListTwo) == 5) then
+        else if (length (List.filter (\x -> (List.any (\y -> y == x.number) (0 :: playedNums)) && x.pressed) sqrListTwo) == 5) then
             True
         else 
             False
@@ -200,9 +217,9 @@ locToSquare matrix loc =
 
 
 -- changes Squares pressed value from False to True when used with map 
-pressSquare : Bool -> Gameboard -> Square -> Square -> Square
-pressSquare isPressed gmbrd a b =
-    if ((a.number == b.number) && (List.any (\x -> (x == a.number)) gmbrd.playedNumbers)) then
+pressSquare : Bool -> Gameboard -> GameNumbers -> Square -> Square -> Square
+pressSquare isPressed gmbrd gameNums a b =
+    if ((a.number == b.number) && (List.any (\x -> (x == a.number)) gameNums.playedNums)) then
         {b | pressed = isPressed}
     else
         b
@@ -215,7 +232,8 @@ createModel =
 type Msg
     = NoOp |
     StartGame |
-    Shuffle (List (Int), List (Int)) |
+    Shuffle (List (Int)) |
+    RandomizeNextGameNumber (Maybe Int) |
     NextNumber |
     GameboardClick Square
 
@@ -226,21 +244,33 @@ update msg model =
             model ! []
         
         StartGame ->
-            (model, randomList)
+            (model, manyRandomLists [gameboard.gameboardNumbers])
 
-        Shuffle (shuffledListOne, shuffledListTwo) ->
+        Shuffle (list) ->
             let
-                newGameboardNumbers = take 25 shuffledListTwo 
-                listOfLists = split 5 newGameboardNumbers
-
+                newGameboardNumbers = take 25 list 
+                matrixLists = split 5 newGameboardNumbers
             in
                 Playing { gameboard |
-                    gameMatrix = Matrix.map initSquare (fromList listOfLists), 
-                    gameNumbers = shuffledListOne, 
-                    gameboardNumbers = take 25 shuffledListTwo } ! []
-
+                    gameMatrix = Matrix.set (loc 2 2) (initSquare 0) (Matrix.map initSquare (fromList matrixLists)) 
+                } gameNumbers ! []
+        
+        RandomizeNextGameNumber (num) ->
+            case num of
+                Nothing ->
+                    model ! []
+                Just number ->
+                    playNextNumber model number
+                
         NextNumber ->
-            playNextNumber model
+            case model of
+                BeginGame ->
+                    model ! []
+                Playing gameboard gameNumbers ->
+                    (model, (randomizeNextGameNumber gameNumbers.toBePlayed))
+                GameOver gameboard gameNumbers int ->
+                    model ! []
+            
 
         GameboardClick sqr->
             if (not sqr.pressed) then
@@ -267,8 +297,8 @@ showPlayedNumbers : List (Int) -> Html Msg
 showPlayedNumbers list = 
     ul[class "played-numbers"] (List.map (\l -> li[class "played-number-item"][text (toString l)]) list)
 
-wrapper : Gameboard -> Html Msg -> Html Msg
-wrapper gmbrd overlay = 
+wrapper : Gameboard -> GameNumbers -> Html Msg -> Html Msg
+wrapper gmbrd gameNumbers overlay = 
     div[class "site-wrapper"][
                 h1[][text "Your gameboard"],
                 br[][],
@@ -276,7 +306,7 @@ wrapper gmbrd overlay =
                 br[][],
                 br[][],
                 button [onClick NextNumber][text "Next number"],
-                showPlayedNumbers gmbrd.playedNumbers,
+                showPlayedNumbers gameNumbers.playedNums,
                 overlay
 
             ]
@@ -298,7 +328,9 @@ startScreen =
                 p[][text """Your objective is to get five in a row on your gameboard either vertically, horizontally or diagonally. 
                 'Next number' button gives you the next number to check on your gameboard. 
                 After you see you have the same number on your gameboard, 
-                just click on the correct number on your gameboard and that square will turn green. 
+                just click on the correct number on your gameboard and that square will turn green.
+                The centermost square is a so-called 'free square'.
+                It can be used to for 5 in a rows. 
                 When you have 5 in a row in your gameboard, you have won the game."""],
                 p[][text "Simple, isn't it?"],
                 br[][],
@@ -318,9 +350,9 @@ view model =
         BeginGame ->
             startScreen
 
-        Playing gameboard ->
-            wrapper gameboard (text "")
+        Playing gameboard gameNums->
+            wrapper gameboard gameNums (text "")
 
-        GameOver gameboard rounds->
-            wrapper gameboard (playAgainOverlay rounds)
+        GameOver gameboard gameNums rounds->
+            wrapper gameboard gameNums (playAgainOverlay rounds)
             
