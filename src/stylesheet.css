@@ -21,7 +21,7 @@
     
 }
 .pressed{
-    background: color #00ff00;
+    background-color: #00ff00;
 }
 .squareContainer{
     float: left;
