@@ -24,7 +24,7 @@ main =
 type Model =
     BeginGame
     | Playing Gameboard
-    | GameOver Gameboard
+    | GameOver Gameboard Int
 
 --square type for the gameboard
 type alias Square = 
@@ -72,16 +72,6 @@ initSquare int =
     , pressed = False
     }
 
---creates one square in html to gameboard
-createSquare : Square -> Html Msg
-createSquare square =
-    div [ class "squareContainer" ]
-        [ 
-            div [ class "square" ]
-            [
-            button [classList [("squareButton", True),("pressed", square.pressed)], onClick (GameboardClick square) ] [text (toString square.number)]
-            ]    
-        ]
 --split list into list of lists
 
 split : Int -> List Int -> List (List Int)
@@ -109,14 +99,9 @@ playNextNumber model =
                             take 1 gameboard.gameNumbers
                             |> append gameboard.playedNumbers
                     } ! []
-        GameOver gameboard ->
+
+        GameOver gameboard _ ->
             model ! []
-
---shows played numbers
-
-showPlayedNumbers : List (Int) -> Html Msg
-showPlayedNumbers list = 
-    ul[class "played-numbers"] (List.map (\l -> li[][text (toString l)]) list)
 
 --checks if player has 5 in a row
 
@@ -136,7 +121,7 @@ checkWin sqr model =
                         gameMatrix = newMatrix
                 } ! []
         
-        GameOver gameboard-> 
+        GameOver gameboard _ -> 
             model ! []
 
 checkWinHelper : Gameboard -> Model
@@ -145,7 +130,7 @@ checkWinHelper gmbrd =
         || (checkRows {gmbrd | gameMatrix = fromList (transpose (toList gmbrd.gameMatrix))})
         || (checkDiagonals gmbrd) 
         then    
-        GameOver gmbrd
+        GameOver gmbrd (length gmbrd.playedNumbers)
     
     else 
         Playing gmbrd
@@ -263,42 +248,79 @@ update msg model =
             else
                 model ! []
 
+--all the html stuff 
+
+--creates one square in html to gameboard
+createSquare : Square -> Html Msg
+createSquare square =
+    div [ class "squareContainer" ]
+        [ 
+            div [ class "square" ]
+            [
+            button [classList [("squareButton", True),("pressed", square.pressed)], onClick (GameboardClick square) ] [text (toString square.number)]
+            ]    
+        ]
+
+--shows played numbers
+
+showPlayedNumbers : List (Int) -> Html Msg
+showPlayedNumbers list = 
+    ul[class "played-numbers"] (List.map (\l -> li[class "played-number-item"][text (toString l)]) list)
+
 wrapper : Gameboard -> Html Msg -> Html Msg
 wrapper gmbrd overlay = 
     div[class "site-wrapper"][
                 h1[][text "Your gameboard"],
                 br[][],
                 div [class "container"] (flatten (Matrix.map createSquare gmbrd.gameMatrix)),
+                br[][],
+                br[][],
                 button [onClick NextNumber][text "Next number"],
                 showPlayedNumbers gmbrd.playedNumbers,
                 overlay
 
             ]
 
-playAgainOverlay : Html Msg
-playAgainOverlay = 
-    div[class "congratulations"][
-                h1[][text "You won!"],
-                button [onClick StartGame][text "Want to play again?"] 
+playAgainOverlay : Int -> Html Msg
+playAgainOverlay rounds= 
+            div[class "congratulations"][
+                h1[][text "Congratulations!"],
+                p[][text ("You won after " ++ (toString rounds) ++ " rounds!")],
+                p[][text "Do you want to play again?"],
+                button [onClick StartGame][text "Play again!"] 
+            ]
+
+startScreen : Html Msg
+startScreen = 
+    div[class "site-wrapper"][
+                h1[][text "Elm Bingo!"],
+                h2[][text "Instructions"],
+                p[][text """Your objective is to get five in a row on your gameboard either vertically, horizontally or diagonally. 
+                'Next number' button gives you the next number to check on your gameboard. 
+                After you see you have the same number on your gameboard, 
+                just click on the correct number on your gameboard and that square will turn green. 
+                When you have 5 in a row in your gameboard, you have won the game."""],
+                p[][text "Simple, isn't it?"],
+                br[][],
+                h2[][text "Do you want to start the game?"],
+                br[][],
+                button [onClick StartGame][text "Start game!"],
+                br[][],
+                br[][],
+                br[][],
+                p[][text "Author:"],
+                p[][text "Aleksi Väisänen 2018"]
             ]
 
 view : Model -> Html Msg
 view model =
     case model of
         BeginGame ->
-            div[class "site-wrapper"][
-                h1[][text "Elm Bingo!"],
-                h2[][text "Do you want to start the game?"],
-                button [onClick StartGame][text "Start game!"],
-                br[][],
-                br[][],
-                br[][],
-                p[][text "Aleksi Väisänen 2018"]
-            ]
+            startScreen
 
         Playing gameboard ->
             wrapper gameboard (text "")
 
-        GameOver gameboard ->
-            wrapper gameboard playAgainOverlay
+        GameOver gameboard rounds->
+            wrapper gameboard (playAgainOverlay rounds)
             

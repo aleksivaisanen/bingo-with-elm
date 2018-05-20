@@ -1,3 +1,30 @@
+var _aleksivaisanen$bingo_with_elm$Main$showPlayedNumbers = function (list) {
+	return A2(
+		_elm_lang$html$Html$ul,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('played-numbers'),
+			_1: {ctor: '[]'}
+		},
+		A2(
+			_elm_lang$core$List$map,
+			function (l) {
+				return A2(
+					_elm_lang$html$Html$li,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('played-number-item'),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(
+							_elm_lang$core$Basics$toString(l)),
+						_1: {ctor: '[]'}
+					});
+			},
+			list));
+};
 var _aleksivaisanen$bingo_with_elm$Main$pressSquare = F4(
 	function (isPressed, gmbrd, a, b) {
 		return (_elm_lang$core$Native_Utils.eq(a.number, b.number) && A2(
@@ -72,29 +99,6 @@ var _aleksivaisanen$bingo_with_elm$Main$checkRows = function (gmbrd) {
 			}
 		}
 	}
-};
-var _aleksivaisanen$bingo_with_elm$Main$showPlayedNumbers = function (list) {
-	return A2(
-		_elm_lang$html$Html$ul,
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$class('played-numbers'),
-			_1: {ctor: '[]'}
-		},
-		A2(
-			_elm_lang$core$List$map,
-			function (l) {
-				return A2(
-					_elm_lang$html$Html$li,
-					{ctor: '[]'},
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html$text(
-							_elm_lang$core$Basics$toString(l)),
-						_1: {ctor: '[]'}
-					});
-			},
-			list));
 };
 var _aleksivaisanen$bingo_with_elm$Main$split = F2(
 	function (n, list) {
@@ -235,9 +239,10 @@ var _aleksivaisanen$bingo_with_elm$Main$Gameboard = F4(
 	function (a, b, c, d) {
 		return {gameMatrix: a, gameNumbers: b, gameboardNumbers: c, playedNumbers: d};
 	});
-var _aleksivaisanen$bingo_with_elm$Main$GameOver = function (a) {
-	return {ctor: 'GameOver', _0: a};
-};
+var _aleksivaisanen$bingo_with_elm$Main$GameOver = F2(
+	function (a, b) {
+		return {ctor: 'GameOver', _0: a, _1: b};
+	});
 var _aleksivaisanen$bingo_with_elm$Main$Playing = function (a) {
 	return {ctor: 'Playing', _0: a};
 };
@@ -280,7 +285,10 @@ var _aleksivaisanen$bingo_with_elm$Main$checkWinHelper = function (gmbrd) {
 				gameMatrix: _chendrix$elm_matrix$Matrix$fromList(
 					_aleksivaisanen$bingo_with_elm$Main$transpose(
 						_chendrix$elm_matrix$Matrix$toList(gmbrd.gameMatrix)))
-			})) || _aleksivaisanen$bingo_with_elm$Main$checkDiagonals(gmbrd))) ? _aleksivaisanen$bingo_with_elm$Main$GameOver(gmbrd) : _aleksivaisanen$bingo_with_elm$Main$Playing(gmbrd);
+			})) || _aleksivaisanen$bingo_with_elm$Main$checkDiagonals(gmbrd))) ? A2(
+		_aleksivaisanen$bingo_with_elm$Main$GameOver,
+		gmbrd,
+		_elm_lang$core$List$length(gmbrd.playedNumbers)) : _aleksivaisanen$bingo_with_elm$Main$Playing(gmbrd);
 };
 var _aleksivaisanen$bingo_with_elm$Main$checkWin = F2(
 	function (sqr, model) {
@@ -411,24 +419,38 @@ var _aleksivaisanen$bingo_with_elm$Main$wrapper = F2(
 						_1: {
 							ctor: '::',
 							_0: A2(
-								_elm_lang$html$Html$button,
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html_Events$onClick(_aleksivaisanen$bingo_with_elm$Main$NextNumber),
-									_1: {ctor: '[]'}
-								},
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html$text('Next number'),
-									_1: {ctor: '[]'}
-								}),
+								_elm_lang$html$Html$br,
+								{ctor: '[]'},
+								{ctor: '[]'}),
 							_1: {
 								ctor: '::',
-								_0: _aleksivaisanen$bingo_with_elm$Main$showPlayedNumbers(gmbrd.playedNumbers),
+								_0: A2(
+									_elm_lang$html$Html$br,
+									{ctor: '[]'},
+									{ctor: '[]'}),
 								_1: {
 									ctor: '::',
-									_0: overlay,
-									_1: {ctor: '[]'}
+									_0: A2(
+										_elm_lang$html$Html$button,
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html_Events$onClick(_aleksivaisanen$bingo_with_elm$Main$NextNumber),
+											_1: {ctor: '[]'}
+										},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text('Next number'),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: _aleksivaisanen$bingo_with_elm$Main$showPlayedNumbers(gmbrd.playedNumbers),
+										_1: {
+											ctor: '::',
+											_0: overlay,
+											_1: {ctor: '[]'}
+										}
+									}
 								}
 							}
 						}
@@ -483,11 +505,76 @@ var _aleksivaisanen$bingo_with_elm$Main$update = F2(
 		}
 	});
 var _aleksivaisanen$bingo_with_elm$Main$StartGame = {ctor: 'StartGame'};
-var _aleksivaisanen$bingo_with_elm$Main$playAgainOverlay = A2(
+var _aleksivaisanen$bingo_with_elm$Main$playAgainOverlay = function (rounds) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('congratulations'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$h1,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text('Congratulations!'),
+					_1: {ctor: '[]'}
+				}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$p,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								'You won after ',
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									_elm_lang$core$Basics$toString(rounds),
+									' rounds!'))),
+						_1: {ctor: '[]'}
+					}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$p,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('Do you want to play again?'),
+							_1: {ctor: '[]'}
+						}),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$button,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Events$onClick(_aleksivaisanen$bingo_with_elm$Main$StartGame),
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text('Play again!'),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}
+			}
+		});
+};
+var _aleksivaisanen$bingo_with_elm$Main$startScreen = A2(
 	_elm_lang$html$Html$div,
 	{
 		ctor: '::',
-		_0: _elm_lang$html$Html_Attributes$class('congratulations'),
+		_0: _elm_lang$html$Html_Attributes$class('site-wrapper'),
 		_1: {ctor: '[]'}
 	},
 	{
@@ -497,69 +584,53 @@ var _aleksivaisanen$bingo_with_elm$Main$playAgainOverlay = A2(
 			{ctor: '[]'},
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html$text('You won!'),
+				_0: _elm_lang$html$Html$text('Elm Bingo!'),
 				_1: {ctor: '[]'}
 			}),
 		_1: {
 			ctor: '::',
 			_0: A2(
-				_elm_lang$html$Html$button,
+				_elm_lang$html$Html$h2,
+				{ctor: '[]'},
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Events$onClick(_aleksivaisanen$bingo_with_elm$Main$StartGame),
-					_1: {ctor: '[]'}
-				},
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html$text('Want to play again?'),
+					_0: _elm_lang$html$Html$text('Instructions'),
 					_1: {ctor: '[]'}
 				}),
-			_1: {ctor: '[]'}
-		}
-	});
-var _aleksivaisanen$bingo_with_elm$Main$view = function (model) {
-	var _p11 = model;
-	switch (_p11.ctor) {
-		case 'BeginGame':
-			return A2(
-				_elm_lang$html$Html$div,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('site-wrapper'),
-					_1: {ctor: '[]'}
-				},
-				{
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$p,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text('Your objective is to get five in a row on your gameboard either vertically, horizontally or diagonally. \n                \'Next number\' button gives you the next number to check on your gameboard. \n                After you see you have the same number on your gameboard, \n                just click on the correct number on your gameboard and that square will turn green. \n                When you have 5 in a row in your gameboard, you have won the game.'),
+						_1: {ctor: '[]'}
+					}),
+				_1: {
 					ctor: '::',
 					_0: A2(
-						_elm_lang$html$Html$h1,
+						_elm_lang$html$Html$p,
 						{ctor: '[]'},
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html$text('Elm Bingo!'),
+							_0: _elm_lang$html$Html$text('Simple, isn\'t it?'),
 							_1: {ctor: '[]'}
 						}),
 					_1: {
 						ctor: '::',
 						_0: A2(
-							_elm_lang$html$Html$h2,
+							_elm_lang$html$Html$br,
 							{ctor: '[]'},
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html$text('Do you want to start the game?'),
-								_1: {ctor: '[]'}
-							}),
+							{ctor: '[]'}),
 						_1: {
 							ctor: '::',
 							_0: A2(
-								_elm_lang$html$Html$button,
+								_elm_lang$html$Html$h2,
+								{ctor: '[]'},
 								{
 									ctor: '::',
-									_0: _elm_lang$html$Html_Events$onClick(_aleksivaisanen$bingo_with_elm$Main$StartGame),
-									_1: {ctor: '[]'}
-								},
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html$text('Start game!'),
+									_0: _elm_lang$html$Html$text('Do you want to start the game?'),
 									_1: {ctor: '[]'}
 								}),
 							_1: {
@@ -571,9 +642,17 @@ var _aleksivaisanen$bingo_with_elm$Main$view = function (model) {
 								_1: {
 									ctor: '::',
 									_0: A2(
-										_elm_lang$html$Html$br,
-										{ctor: '[]'},
-										{ctor: '[]'}),
+										_elm_lang$html$Html$button,
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html_Events$onClick(_aleksivaisanen$bingo_with_elm$Main$StartGame),
+											_1: {ctor: '[]'}
+										},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text('Start game!'),
+											_1: {ctor: '[]'}
+										}),
 									_1: {
 										ctor: '::',
 										_0: A2(
@@ -583,28 +662,64 @@ var _aleksivaisanen$bingo_with_elm$Main$view = function (model) {
 										_1: {
 											ctor: '::',
 											_0: A2(
-												_elm_lang$html$Html$p,
+												_elm_lang$html$Html$br,
 												{ctor: '[]'},
-												{
+												{ctor: '[]'}),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html$br,
+													{ctor: '[]'},
+													{ctor: '[]'}),
+												_1: {
 													ctor: '::',
-													_0: _elm_lang$html$Html$text('Aleksi Väisänen 2018'),
-													_1: {ctor: '[]'}
-												}),
-											_1: {ctor: '[]'}
+													_0: A2(
+														_elm_lang$html$Html$p,
+														{ctor: '[]'},
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html$text('Author:'),
+															_1: {ctor: '[]'}
+														}),
+													_1: {
+														ctor: '::',
+														_0: A2(
+															_elm_lang$html$Html$p,
+															{ctor: '[]'},
+															{
+																ctor: '::',
+																_0: _elm_lang$html$Html$text('Aleksi Väisänen 2018'),
+																_1: {ctor: '[]'}
+															}),
+														_1: {ctor: '[]'}
+													}
+												}
+											}
 										}
 									}
 								}
 							}
 						}
 					}
-				});
+				}
+			}
+		}
+	});
+var _aleksivaisanen$bingo_with_elm$Main$view = function (model) {
+	var _p11 = model;
+	switch (_p11.ctor) {
+		case 'BeginGame':
+			return _aleksivaisanen$bingo_with_elm$Main$startScreen;
 		case 'Playing':
 			return A2(
 				_aleksivaisanen$bingo_with_elm$Main$wrapper,
 				_p11._0,
 				_elm_lang$html$Html$text(''));
 		default:
-			return A2(_aleksivaisanen$bingo_with_elm$Main$wrapper, _p11._0, _aleksivaisanen$bingo_with_elm$Main$playAgainOverlay);
+			return A2(
+				_aleksivaisanen$bingo_with_elm$Main$wrapper,
+				_p11._0,
+				_aleksivaisanen$bingo_with_elm$Main$playAgainOverlay(_p11._1));
 	}
 };
 var _aleksivaisanen$bingo_with_elm$Main$main = _elm_lang$html$Html$program(
