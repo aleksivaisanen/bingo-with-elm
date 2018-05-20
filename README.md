@@ -4,4 +4,7 @@
 
 Single player Bingo game for browser.
 
+Working demo:
+https://bingowithelm.herokuapp.com/
+
 Aleksi Väisänen 2018
